@@ -49,7 +49,7 @@ The system emphasizes **explainability** and **traceability**: each agent contri
 
 ### 3) Configure environment variables (examples)
 - `OPENAI_API_KEY` (or provider of choice)
-- Search provider keys (e.g., Google Custom Search / Serper)
+- Search provider keys (e.g., Tavily / Serper)
 - Any additional API keys used by your tools
 
 > Keep secrets out of the repo. Use a local `.env` (not committed).
@@ -74,7 +74,7 @@ The prototype was manually tested on a set of claims (titles and full texts) fro
 
 ## 🔧 Tech Stack
 
-- **Flowise**, **OpenAI** ,**Serper API**, **Google API** 
+- **Flowise**, **OpenAI** ,**Serper API**, **Tavily** 
 
 ## 📥 How to Reproduce (Quick Checklist)
 
