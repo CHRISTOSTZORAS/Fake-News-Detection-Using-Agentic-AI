@@ -85,4 +85,46 @@ The prototype was manually tested on a set of claims (titles and full texts) fro
 - [ ] Run the flow with sample claims  
 - [ ] Inspect final verdict + intermediate agent outputs  
 
+## 🔄 Recent Updates
 
+- Replaced Google Custom Search with Tavily API  
+- Added batch experimentation pipeline  
+- Enabled automated evaluation on datasets  
+- Stored full reasoning traces and structured outputs  
+
+---
+
+## 🧪 Batch Experiments
+
+Install dependencies:
+
+pip install requests pandas tqdm scikit-learn python-dotenv
+
+Run:
+
+python experiments/scripts/run_experiments.py --input dataset.csv --output results.csv
+
+---
+
+## 📊 Output
+
+- Accuracy  
+- Macro F1  
+- Classification report  
+- Full explainability logs  
+
+---
+
+## 🔮 Next Steps
+
+- Fix Tavily integration  
+- Use real datasets (LIAR, FakeNewsNet)  
+- Convert Supervisor output to JSON  
+- Run large-scale experiments  
+- Add experiment tracking  
+
+---
+
+## 🧠 Contribution
+
+Explainable multi-agent fake news detection with reproducible evaluation.

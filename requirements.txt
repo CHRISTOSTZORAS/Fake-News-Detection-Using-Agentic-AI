@@ -1,1 +1,5 @@
 requests
+pandas
+tqdm
+scikit-learn
+python-dotenv
