@@ -14,7 +14,16 @@ SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
 TIMEOUT = 120
 
+def load_input_file(input_file: str) -> pd.DataFrame:
+    input_path = Path(input_file)
 
+    if input_path.suffix.lower() == ".csv":
+        return pd.read_csv(input_file)
+    elif input_path.suffix.lower() in [".xlsx", ".xls"]:
+        return pd.read_excel(input_file)
+    else:
+        raise ValueError("Supported input formats: .csv, .xlsx, .xls")
+    
 def extract_final_decision(text: str) -> str:
     if not isinstance(text, str):
         return "ERROR"
@@ -154,11 +163,11 @@ def query_flowise(claim_text: str) -> dict:
             time.sleep(2)
 
 
-def run_experiment(input_csv: str, output_csv: str):
-    df = pd.read_csv(input_csv)
+def run_experiment(input_file: str, output_file: str):
+    df = load_input_file(input_file)
 
     if "text" not in df.columns or "label" not in df.columns:
-        raise ValueError("Input CSV must contain columns: text,label")
+        raise ValueError("Input file must contain columns: text,label")
 
     predictions = []
     confidence_levels = []
@@ -192,7 +201,7 @@ def run_experiment(input_csv: str, output_csv: str):
         "final_explanation": [],
     }
 
-    for text in tqdm(df["text"].tolist(), desc="Running claims"):
+    for text in tqdm(df["text"].astype(str).tolist(), desc="Running claims"):
         result = query_flowise(text)
 
         predictions.append(result["prediction"])
@@ -215,8 +224,15 @@ def run_experiment(input_csv: str, output_csv: str):
     for key, values in parsed_columns.items():
         df[key] = values
 
-    Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_csv, index=False, encoding="utf-8-sig")
+    output_path = Path(output_file)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if output_path.suffix.lower() == ".csv":
+        df.to_csv(output_file, index=False, encoding="utf-8-sig")
+    elif output_path.suffix.lower() in [".xlsx", ".xls"]:
+        df.to_excel(output_file, index=False)
+    else:
+        raise ValueError("Supported output formats: .csv, .xlsx, .xls")
 
     valid_df = df[df["prediction"].isin(["REAL", "FAKE", "SUSPICIOUS"])].copy()
 
@@ -240,8 +256,8 @@ def run_experiment(input_csv: str, output_csv: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", required=True, help="Path to input CSV with columns text,label")
-    parser.add_argument("--output", default="experiments/results/results.csv", help="Path to output CSV")
+    parser.add_argument("--input", required=True, help="Path to input file (.csv or .xlsx) with columns text,label")
+    parser.add_argument("--output", default="experiments/results/results.xlsx", help="Path to output file (.csv or .xlsx)")
 
     args = parser.parse_args()
     run_experiment(args.input, args.output)
