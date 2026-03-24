@@ -257,7 +257,7 @@ def run_experiment(input_file: str, output_file: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, help="Path to input file (.csv or .xlsx) with columns text,label")
-    parser.add_argument("--output", default="experiments/results/results.xlsx", help="Path to output file (.csv or .xlsx)")
+    parser.add_argument("--output", default="experiments/results/results.csv", help="Path to output file (.csv or .xlsx)")
 
     args = parser.parse_args()
     run_experiment(args.input, args.output)
