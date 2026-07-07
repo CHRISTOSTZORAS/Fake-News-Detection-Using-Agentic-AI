@@ -8,8 +8,12 @@ import pandas as pd
 import requests
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from tqdm import tqdm
+import os
+from dotenv import load_dotenv
 
-FLOWISE_URL = "http://localhost:3000/api/v1/prediction/1f705796-571c-400c-9e93-f835e4e44c3f"
+load_dotenv()
+FLOWISE_URL = os.getenv("FLOWISE_URL")
+
 SLEEP_BETWEEN_CALLS = 0.5
 MAX_RETRIES = 3
 TIMEOUT = 120

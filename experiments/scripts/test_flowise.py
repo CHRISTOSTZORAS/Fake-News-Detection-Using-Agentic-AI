@@ -1,7 +1,10 @@
 import requests
 
-FLOWISE_URL = "http://localhost:3000/api/v1/prediction/1f705796-571c-400c-9e93-f835e4e44c3f"
-#FLOWISE_URL = "http://localhost:3000/api/v1/prediction/72461436-2d42-4f8e-acfa-91f144ac545c"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+FLOWISE_URL = os.getenv("FLOWISE_URL")
 def test():
     payload = {
         "question": "Vaccines cause autism"
