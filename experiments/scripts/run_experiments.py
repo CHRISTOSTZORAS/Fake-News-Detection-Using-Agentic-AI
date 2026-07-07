@@ -34,7 +34,12 @@ def extract_final_decision(text: str) -> str:
 
     match = re.search(r"FINAL DECISION:\s*(REAL|FAKE|SUSPICIOUS)", text, re.IGNORECASE)
     if match:
-        return match.group(1).upper()
+        decision = match.group(1).upper()
+
+        if decision == "SUSPICIOUS":
+            return "FAKE"
+
+        return decision
 
     return "ERROR"
 
@@ -103,7 +108,7 @@ def extract_all_fields(text: str) -> dict:
         "source_score": find(r"Average Source Score:\s*(\d+)/100"),
         "source_quality": find(r"Average Source Score:\s*\d+/100\s*—\s*([A-Za-z]+)"),
         "source_notes": find(r"Notes:\s*(.*?)\n\n📢"),
-        "final_decision": find(r"FINAL DECISION:\s*(REAL|FAKE)"),
+        "final_decision": extract_final_decision(text),
         "final_confidence_level": find(r"CONFIDENCE LEVEL:\s*(High|Medium|Low)"),
         "final_explanation": find(r'EXPLANATION:\s*"(.*?)"\s*\\?===================='),
     }

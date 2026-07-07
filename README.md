@@ -178,6 +178,65 @@ To restore a backup:
 3. Restart Flowise.
 4. Re-import the pipeline if needed.
 
+### Running the backup script
+
+To manually create a backup of the Flowise database:
+
+```powershell
+.\backup_flowise.bat
+```
+
+The script creates a timestamped SQLite backup under:
+
+```text
+C:\Users\tzwrakos\.flowise\backups
+```
+
+It is recommended to run the backup script before:
+- Updating Flowise
+- Changing Flowise versions
+- Modifying the database
+- Making major changes to the agent workflow
+
+## Example
+
+```bash
+python experiments/scripts/run_experiments.py ^
+    --input datasets/gossipcop_sample.xlsx ^
+    --output experiments/results/results_gossipcop.xlsx
+```
+
+The script:
+
+1. Loads a dataset containing at least the columns:
+   - `text`
+   - `label`
+2. Sends each claim to the deployed Flowise workflow through its REST API.
+3. Parses the structured response.
+4. Stores:
+   - Final prediction
+   - Confidence level
+   - Intermediate agent outputs
+   - Source information
+   - Raw JSON response
+5. Computes evaluation metrics:
+   - Accuracy
+   - Macro F1-score
+   - Classification Report
+6. Exports all results to Excel or CSV.
+
+## Python Experiment Configuration
+
+The experiment scripts read the Flowise API endpoint from the local `.env` file.
+
+Example:
+
+```env
+FLOWISE_URL=http://localhost:3000/api/v1/prediction/1f705796-571c-400c-9e93-f835e4e44c3f
+```
+
+This allows changing the deployed Flowise workflow without modifying the Python source code.
+
 ## 📊 Output and Evaluation
 
 The workflow produces both prediction outputs and explainability artifacts such as:
