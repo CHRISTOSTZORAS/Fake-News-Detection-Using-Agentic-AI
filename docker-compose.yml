@@ -1,0 +1,9 @@
+services:
+  flowise:
+    image: flowiseai/flowise:3.0.1
+    ports:
+      - "3000:3000"
+    volumes:
+      - C:/Users/tzwrakos/.flowise:/root/.flowise
+    environment:
+      - PORT=3000
