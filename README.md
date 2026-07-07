@@ -1,130 +1,205 @@
-# 🎓 Fake News Detection on Social Media (Flowise + LLMs)
+﻿# 🎓 Fake News Detection Using Agentic AI
 
 **Author:** Christos Tzoras  
 **Degree:** MSc in Applied Statistics (specialization in Data Science) — University of Piraeus  
 **Year:** 2025
 
-> A transparent, modular, and explainable fake news detection system built with **Flowise** and  **LLMs** in a **multi-agent** architecture.
+> This project implements an explainable fake-news detection system built with Flowise, large language models, and a multi-agent workflow. The goal is not only to classify a claim as real, fake, or suspicious, but also to show the reasoning path, evidence sources, and supporting signals behind the decision.
 
-## 🧭 Overview
+## 🧭 Project Overview
 
 This repository contains:
-- **Flowise pipeline JSON** for the end-to-end AI workflow
-- **Thesis PDF** and **presentation slides**
-- Documentation for setup, import, and experimentation
+- A Flowise-based multi-agent workflow exported as a pipeline file
+- A set of experiment scripts for evaluation and batch processing
+- Documentation, backup scripts, and supporting assets for running the system
 
-The system emphasizes **explainability** and **traceability**: each agent contributes a structured signal (verdict, confidence, source quality, bias/emotion/time scores), and a **Supervisor** composes the final decision.
+The system is designed around transparency and traceability. Each agent produces structured outputs such as a verdict, confidence, evidence URLs, and quality/score signals, and a supervisor agent combines these into the final decision.
 
-## 📂 Repository Contents
+## 🧱 System Architecture
+
+The workflow is built as a set of cooperating agents in Flowise:
+
+| Agent | Role |
+|---|---|
+| Input Agent | Receives the claim, URL, or text input; normalizes the content and prepares it for analysis |
+| Research / Classifier Agent | Searches the web for evidence and produces an initial verdict, confidence, and supporting sources |
+| Cross-Check Agent | Performs an independent second-pass search for additional evidence and a verification hint |
+| Scoring Agent | Evaluates signals such as bias, emotion, credibility, and timeliness |
+| Source Quality Agent | Assesses the reliability of the sources and computes an aggregated source-quality score |
+| Supervisor Agent | Combines all intermediate signals into a final decision with explanation |
+
+The exported Flowise pipeline is stored in:
+- flowise/fake news detector Agents.json
+
+## 🛠️ Tools Used by the Agents
+
+The agents are designed to work with a set of tools commonly configured in Flowise:
+
+- LLM reasoning tools for agent decision-making and explanation generation
+- Web search tools such as Tavily and/or Serper for evidence retrieval
+- HTTP/URL fetch tools for reading and processing source content
+- Text-processing tools for cleaning, translation, and language handling
+- Python-based evaluation scripts for batch testing and scoring
+
+In practice, the agents rely on:
+- An OpenAI-compatible LLM provider or similar model endpoint
+- Search providers for external evidence
+- Structured output generation for explainability
+
+## 📂 Repository Structure
 
 | Path | Description |
 |---|---|
-| `flowise/flowise_pipeline.json` | Exported Flowise pipeline (import into Flowise) |
-| `thesis/Tzoras_23006.pdf` | Full MSc thesis (PDF) |
-| `thesis/Thesis Presentation.pptx` | Slide deck (optional) |
-| `assets/architecture.png` | System/graph diagram (optional) |
+| flowise/fake news detector Agents.json | Exported Flowise agent workflow |
+| docker-compose.yml | Docker Compose file for running Flowise |
+| backup_flowise.bat | Windows backup script for the Flowise database |
+| requirements.txt | Python dependencies for experiment scripts |
+| experiments/scripts | Batch evaluation and helper scripts |
+| thesis | Thesis PDF and presentation files |
+| assets | Images and supporting assets |
 
-## 🧱 System Architecture (Flowise, multi-agent)
+## 🚀 Running the Project
 
-**Key agents (high-level):**
-- **Input Agent** — normalizes incoming input (URL/text/file), language detection/translation, cleaning.
-- **Fake News Classifier** — searches the web for evidence; outputs `verdict` (REAL/FAKE/SUSPICIOUS), `confidence`, `sources`.
-- **Second Search Agent** — independent cross-check (fresh sources); returns `verdict_hint` and supporting URLs.
-- **Scoring Agent** — rates **bias**, **emotion**, **credibility**, **time relevance** (0–100 + labels).
-- **Source Quality Checker** — scores domain credibility and computes an average source-quality score.
-- **Supervisor Agent** — fuses all signals with rule-based logic and produces the **final decision** with explanation.
+### Prerequisites
 
-> Import the JSON and you’ll see the exact nodes/edges in Flowise.
+You need:
+- Docker Desktop (recommended) or a local Node/Flowise installation
+- API keys for your LLM provider and any search tool provider you use
+- A local environment file with secrets such as .env
 
-## 🚀 Getting Started
+### Option 1: Run with Docker (recommended)
 
-### 1) Install Flowise
-- Follow the official docs to run Flowise locally (Docker or Node).  
-- Start the UI (usually at `http://localhost:3000`).
+The repository already includes a Docker Compose configuration.
 
-### 2) Import the pipeline
-1. Open Flowise → **Import**  
-2. Select `flowise/flowise_pipeline.json`  
-3. Confirm nodes and environment variables
+1. Make sure Docker Desktop is running.
+2. Open a terminal in the project root.
+3. Start Flowise:
 
-### 3) Configure environment variables (examples)
-- `OPENAI_API_KEY` (or provider of choice)
-- Search provider keys (e.g., Tavily / Serper)
-- Any additional API keys used by your tools
+```bash
+docker compose up -d
+```
 
-> Keep secrets out of the repo. Use a local `.env` (not committed).
+4. Open the Flowise UI in your browser:
 
-### 4) Run
-- In Flowise UI, paste a claim/headline (or URL)  
-- Trigger the flow and inspect the **Supervisor** output:
-  - Final **verdict** + **confidence**
-  - **Evidence** with URLs
-  - **Bias/Emotion/Credibility/Time** scores
-  - **Source quality** assessment
+```text
+http://localhost:3000
+```
 
-## 🧠 Methods & Design Highlights
+5. Import the exported workflow from:
+- flowise/fake news detector Agents.json
 
-- **Multi-Agent** decomposition for transparency and modularity  
-- **Explainability** via structured JSON outputs from each agent  
-- **Statistical/NLP signals** (bias, emotion, credibility, timeliness) augment verdicts
+6. Configure the required environment variables in Flowise or in your local .env file.
 
-## 📊 Datasets & Evaluation (high-level)
+### Docker Compose Details
 
-The prototype was manually tested on a set of claims (titles and full texts) from well-known fake-news datasets to validate **accuracy** and **explainability**. The focus is on **traceable reasoning** (evidence links, confidence, semantic alignment) rather than opaque black-box classification.
+The current compose file uses the Flowise Docker image:
+- flowiseai/flowise:3.0.1
+- Port mapping: 3000:3000
+- Persistent volume mapping for Flowise data
 
-## 🔧 Tech Stack
+This is the simplest way to reproduce the setup on a local machine.
 
-- **Flowise**, **OpenAI** ,**Serper API**, **Tavily** 
+### Option 2: Run Flowise locally
 
-## 📥 How to Reproduce (Quick Checklist)
+If you prefer a non-Docker setup:
+1. Install Flowise following the official documentation.
+2. Start the Flowise server.
+3. Import the exported pipeline JSON.
+4. Configure the environment variables for the agents.
 
-- [ ] Clone the repo  
-- [ ] Install & run Flowise  
-- [ ] Import `flowise/flowise_pipeline.json`  
-- [ ] Add API keys in Flowise (env)  
-- [ ] Run the flow with sample claims  
-- [ ] Inspect final verdict + intermediate agent outputs  
+## 🔐 Environment Variables
 
-## 🔄 Recent Updates
+Set the following values before running the workflow:
 
-- Replaced Google Custom Search with Tavily API  
-- Added batch experimentation pipeline  
-- Enabled automated evaluation on datasets  
-- Stored full reasoning traces and structured outputs  
+- OPENAI_API_KEY or the key for your chosen LLM provider
+- Search provider keys such as Tavily or Serper
+- Any extra credentials required by the tools you attach to the agents
 
----
+Keep secrets local and do not commit them to the repository. A local .env file is the recommended approach.
+
+## ▶️ How to Use the Workflow
+
+Once Flowise is running:
+1. Open the imported agent flow.
+2. Paste a claim, headline, or article URL into the input node.
+3. Run the workflow.
+4. Inspect the outputs from the supervisor node:
+   - Final verdict
+   - Confidence score
+   - Evidence URLs
+   - Bias, emotion, credibility, and timeliness signals
+   - Source quality assessment
 
 ## 🧪 Batch Experiments
 
-Install dependencies:
+The repository also includes Python scripts for reproducible experiments.
 
-pip install requests pandas tqdm scikit-learn python-dotenv
+### Install dependencies
 
-Run:
+```bash
+pip install -r requirements.txt
+```
 
-python experiments/scripts/run_experiments.py --input dataset.csv --output results.csv
+### Run the experiment script
 
----
+```bash
+python experiments/scripts/run_experiments.py --input <dataset.csv> --output <results.csv>
+```
 
-## 📊 Output
+The experiment scripts are intended to:
+- Load datasets
+- Run the workflow or evaluate predictions in batches
+- Produce metrics such as accuracy and macro F1
+- Save structured explanations and outputs
 
-- Accuracy  
-- Macro F1  
-- Classification report  
-- Full explainability logs  
+## 💾 Backup and Restore
 
----
+### Backup Flowise data
 
-## 🔮 Next Steps
+The repository includes a Windows backup helper:
+- backup_flowise.bat
 
-- Fix Tavily integration  
-- Use real datasets (LIAR, FakeNewsNet)  
-- Convert Supervisor output to JSON  
-- Run large-scale experiments  
-- Add experiment tracking  
+This script creates a timestamped copy of the Flowise SQLite database into a backups folder under the Flowise data directory.
 
----
+### Recommended backup practice
 
-## 🧠 Contribution
+Keep backups of:
+- The Flowise database file
+- The Flowise data directory
+- The exported pipeline JSON file
+- Your .env file
+- Any result CSV files generated during experiments
 
-Explainable multi-agent fake news detection with reproducible evaluation.
+### Restore
+
+To restore a backup:
+1. Stop Flowise.
+2. Replace the current Flowise database with the backup copy.
+3. Restart Flowise.
+4. Re-import the pipeline if needed.
+
+## 📊 Output and Evaluation
+
+The workflow produces both prediction outputs and explainability artifacts such as:
+- Verdict
+- Confidence
+- Evidence links
+- Bias/emotion/credibility/timeliness scores
+- Source quality summaries
+- Structured logs for analysis
+
+This makes the system suitable for both qualitative inspection and quantitative evaluation.
+
+## 📌 Notes
+
+- The project is experimental and intended for research, prototyping, and academic demonstration.
+- The focus is on explainability, modularity, and traceable reasoning rather than only raw classification accuracy.
+- The Flowise pipeline is the central artifact for the workflow definition.
+
+## 🔮 Future Work
+
+Possible next steps include:
+- Improving the integration with search providers
+- Expanding evaluation on larger datasets such as LIAR or FakeNewsNet
+- Enhancing supervisor logic and structured JSON output
+- Adding experiment tracking and better reproducibility
