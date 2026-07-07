@@ -99,10 +99,11 @@ def extract_all_fields(text: str) -> dict:
         "source_score": find(r"Average Source Score:\s*(\d+)/100"),
         "source_quality": find(r"Average Source Score:\s*\d+/100\s*—\s*([A-Za-z]+)"),
         "source_notes": find(r"Notes:\s*(.*?)\n\n📢"),
-        "final_decision": find(r"FINAL DECISION:\s*(REAL|FAKE|SUSPICIOUS)"),
+        "final_decision": find(r"FINAL DECISION:\s*(REAL|FAKE)"),
         "final_confidence_level": find(r"CONFIDENCE LEVEL:\s*(High|Medium|Low)"),
         "final_explanation": find(r'EXPLANATION:\s*"(.*?)"\s*\\?===================='),
     }
+
 
 
 def query_flowise(claim_text: str) -> dict:
@@ -234,7 +235,7 @@ def run_experiment(input_file: str, output_file: str):
     else:
         raise ValueError("Supported output formats: .csv, .xlsx, .xls")
 
-    valid_df = df[df["prediction"].isin(["REAL", "FAKE", "SUSPICIOUS"])].copy()
+    valid_df = df[df["prediction"].isin(["REAL", "FAKE"])].copy()
 
     print("\n===== RESULTS =====")
     print(f"Total samples: {len(df)}")

@@ -1,48 +1,59 @@
 import pandas as pd
-from pathlib import Path
 
-# 📂 Paths
-sample_path = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\data\\test1.xlsx"
-results_path = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\results\\test1_results.csv"
+# Paths
+gossipcop_file = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\data\\gossipcop.csv"
 
-output_dir = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\data"
+existing_excel = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\results\\Sample_942_results_gossipcop.xlsx"
 
-# 📥 Load
-sample_df = pd.read_excel(sample_path)
-results_df = pd.read_csv(results_path)
+output_file = r"C:\\Users\\tzwrakos\\Υπολογιστής\\Projects\\Fake-News-Detection-Using-Agentic-AI\\experiments\\data\\gossipcop_new_1200_sample.xlsx"
 
-# 🔥 Ensure matching type
-sample_df["text"] = sample_df["text"].astype(str)
-results_df["text"] = results_df["text"].astype(str)
+# Read files
+gossipcop_df = pd.read_csv(gossipcop_file, encoding="latin1")
+existing_df = pd.read_excel(existing_excel)
 
-# ✅ 1. Sample_367 (successful)
-sample_367 = results_df[
-    (results_df["status"] == "OK") &
-    (results_df["prediction"].isin(["REAL", "FAKE", "SUSPICIOUS"]))
-].copy()
-sample_367_results = sample_367.copy()
-# 🔹 texts που πέτυχαν
-successful_texts = set(sample_367["text"])
+# Keep only rows where text is not empty
+gossipcop_df = gossipcop_df.dropna(subset=["text"])
+existing_df = existing_df.dropna(subset=["text"])
 
-# ✅ 2. Sample_Rest (failed)
-sample_rest = sample_df[
-    ~sample_df["text"].isin(successful_texts)
-].copy()
+# Clean text for safer comparison
+gossipcop_df["text_clean"] = gossipcop_df["text"].astype(str).str.strip()
+existing_df["text_clean"] = existing_df["text"].astype(str).str.strip()
 
-# ✅ 3. Sample_200 (next test από failed)
-sample_200 = sample_rest.sample(
-    n=min(200, len(sample_rest)),
-    random_state=42
-)
+# Remove from gossipcop rows that already exist in Sample 942
+new_rows = gossipcop_df[~gossipcop_df["text_clean"].isin(existing_df["text_clean"])]
 
-# 📁 Save
-Path(output_dir).mkdir(parents=True, exist_ok=True)
+# Remove duplicate texts inside the new sample source
+new_rows = new_rows.drop_duplicates(subset=["text_clean"], keep="first")
 
-sample_367.to_excel(f"{output_dir}\\Sample_367.xlsx", index=False)
-sample_rest.to_excel(f"{output_dir}\\Sample_Rest.xlsx", index=False)
-sample_200.to_excel(f"{output_dir}\\Sample_200.xlsx", index=False)
-sample_367_results.to_excel(f"{output_dir}\\Sample_367_results.xlsx", index=False)
-# 📊 Logs
-print(f"Sample_367: {len(sample_367)} rows")
-print(f"Sample_Rest: {len(sample_rest)} rows")
-print(f"Sample_200: {len(sample_200)} rows")
+# Keep only REAL and FAKE labels
+new_rows = new_rows[new_rows["label"].isin(["REAL", "FAKE"])]
+
+# Split by label
+real_rows = new_rows[new_rows["label"] == "REAL"]
+fake_rows = new_rows[new_rows["label"] == "FAKE"]
+
+print("Available REAL rows:", len(real_rows))
+print("Available FAKE rows:", len(fake_rows))
+
+# Take 600 REAL and 600 FAKE
+real_sample = real_rows.sample(n=600, random_state=42)
+fake_sample = fake_rows.sample(n=600, random_state=42)
+
+# Merge balanced sample
+sample_1200 = pd.concat([real_sample, fake_sample], ignore_index=True)
+
+# Shuffle final dataset
+sample_1200 = sample_1200.sample(frac=1, random_state=42).reset_index(drop=True)
+
+# Remove helper column
+sample_1200 = sample_1200.drop(columns=["text_clean"])
+
+# Save
+sample_1200.to_excel(output_file, index=False)
+
+print("Final rows saved:", len(sample_1200))
+print("\nFinal label counts:")
+print(sample_1200["label"].value_counts())
+
+print("\nSaved to:")
+print(output_file)
